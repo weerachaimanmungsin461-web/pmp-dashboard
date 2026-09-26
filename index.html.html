@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMP Factory Operations Dashboard - บริษัท พีเอ็มพี จำกัด</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f8fafc;
+        }
+        .tab-active {
+            border-bottom: 3px solid #ef4444;
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .nav-btn-active {
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-16 md:pb-0">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-red-600 p-2 rounded-lg text-white font-bold text-xl tracking-wider">PMP</div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">บริษัท พีเอ็มพี จำกัด</h1>
+                    <p class="text-xs text-slate-400">ระบบควบคุมการปฏิบัติงานโรงงานตัดแต่งเนื้อสุกร (50 ตัน/วัน)</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-4 text-xs">
+                <div class="bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>สถานะโรงงาน: ปกติ (กะที่ 1)</span>
+                </div>
+                <div class="text-slate-300">
+                    <span id="current-date">--/--/----</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top KPI Bar -->
+    <section class="bg-slate-800 text-slate-100 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400">เป้าหมายการผลิต/วัน</p>
+                    <p class="text-lg md:text-xl font-bold text-red-400">50,000 <span class="text-xs text-slate-300">กก.</span></p>
+                </div>
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400">Yield Target</p>
+                    <p class="text-lg md:text-xl font-bold text-emerald-400">98.5 <span class="text-xs text-slate-300">%</span></p>
+                </div>
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400">คุมอุณหภูมิห้องตัดแต่ง</p>
+                    <p class="text-lg md:text-xl font-bold text-sky-400">&le; 15 <span class="text-xs text-slate-300">&deg;C</span></p>
+                </div>
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-700">
+                    <p class="text-xs text-slate-400">มาตรฐานความปลอดภัย</p>
+                    <p class="text-lg md:text-xl font-bold text-amber-400">GMP/HACCP</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- Department Selector (Desktop/Tablet Horizontal Scroll) -->
+        <div class="mb-6 overflow-x-auto pb-2 scrollbar-none">
+            <div class="flex space-x-2 min-w-max" id="dept-nav-container">
+                <!-- Buttons rendered via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Selected Department Header Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-start md:items-center space-x-4">
+                    <div id="dept-icon-bg" class="p-3.5 bg-red-100 text-red-600 rounded-xl">
+                        <i id="dept-icon" data-lucide="truck" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 id="dept-title" class="text-xl font-bold text-slate-900">1. แผนกตรวจรับวัตถุดิบ (Receiving)</h2>
+                            <span id="dept-code" class="bg-slate-100 text-slate-600 text-xs px-2.5 py-0.5 rounded-full font-semibold border border-slate-200">RC</span>
+                        </div>
+                        <p id="dept-location" class="text-sm text-slate-500 mt-0.5">พื้นที่: โถงรับวัตถุดิบ (ฝั่งซ้าย) & ห้องพักหมูซีก (-4 °C)</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                    <div class="text-left md:text-right">
+                        <p class="text-xs text-slate-400">อัตรากำลังคนประจำจุด</p>
+                        <p id="dept-manpower" class="text-base font-bold text-slate-700">4 คน / กะ</p>
+                    </div>
+                    <div class="text-left md:text-right border-l border-slate-200 pl-4">
+                        <p class="text-xs text-slate-400">อุณหภูมิควบคุม</p>
+                        <p id="dept-temp" class="text-base font-bold text-sky-600">&le; 4 °C</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inner Content Tabs (Responsibilities / Checkpoints / Records) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200 flex text-sm font-medium">
+                <button onclick="switchTab('tasks')" id="tab-btn-tasks" class="flex-1 py-3.5 px-4 text-center border-b-2 tab-active flex items-center justify-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                    <span>หน้าที่และความรับผิดชอบ</span>
+                </button>
+                <button onclick="switchTab('checkpoints')" id="tab-btn-checkpoints" class="flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>จุดตรวจสอบ & Standards</span>
+                </button>
+                <button onclick="switchTab('records')" id="tab-btn-records" class="flex-1 py-3.5 px-4 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center justify-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>แบบบันทึกที่ต้องใช้งาน</span>
+                </button>
+            </div>
+
+            <div class="p-5">
+                <!-- Tab 1: Tasks -->
+                <div id="tab-content-tasks" class="block">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">ลำดับขั้นตอนปฏิบัติงาน (Standard Operating Flow)</h3>
+                    <div id="tasks-list" class="space-y-3">
+                        <!-- Rendered via Javascript -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Checkpoints -->
+                <div id="tab-content-checkpoints" class="hidden">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">จุดควบคุมคุณภาพและความปลอดภัย (Control Points & Checklists)</h3>
+                    <div id="checkpoints-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Rendered via Javascript -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Records -->
+                <div id="tab-content-records" class="hidden">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">เอกสารและแบบบันทึกข้อมูล (Forms & Quality Records)</h3>
+                    <div id="records-list" class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-4">รหัสเอกสาร</th>
+                                    <th class="py-3 px-4">ชื่อแบบบันทึก</th>
+                                    <th class="py-3 px-4">ความถี่ในการจดบันทึก</th>
+                                    <th class="py-3 px-4">ผู้รับผิดชอบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-table-body" class="divide-y divide-slate-100">
+                                <!-- Rendered via Javascript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around items-center py-2 px-1 text-slate-500 text-[10px]">
+        <button onclick="selectDept('RC')" class="mobile-nav-item flex flex-col items-center gap-0.5 text-red-500 font-medium">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+            <span>รับซาก</span>
+        </button>
+        <button onclick="selectDept('CT')" class="mobile-nav-item flex flex-col items-center gap-0.5">
+            <i data-lucide="scissors" class="w-5 h-5"></i>
+            <span>ตัดแต่ง</span>
+        </button>
+        <button onclick="selectDept('PK')" class="mobile-nav-item flex flex-col items-center gap-0.5">
+            <i data-lucide="package" class="w-5 h-5"></i>
+            <span>แพ็กเกจ</span>
+        </button>
+        <button onclick="selectDept('WH')" class="mobile-nav-item flex flex-col items-center gap-0.5">
+            <i data-lucide="snowflake" class="w-5 h-5"></i>
+            <span>คลังสินค้า</span>
+        </button>
+        <button onclick="selectDept('QA')" class="mobile-nav-item flex flex-col items-center gap-0.5">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span>QA/QC</span>
+        </button>
+        <button onclick="selectDept('SN')" class="mobile-nav-item flex flex-col items-center gap-0.5">
+            <i data-lucide="wrench" class="w-5 h-5"></i>
+            <span>ซ่อมบำรุง</span>
+        </button>
+    </div>
+
+    <!-- JavaScript Data and Logic -->
+    <script>
+        // Department Data Store
+        const departmentData = {
+            RC: {
+                title: "1. แผนกตรวจรับวัตถุดิบ (Receiving)",
+                code: "RC",
+                icon: "truck",
+                location: "โถงรับวัตถุดิบ (ด้านซ้าย) & ห้องพักหมูซีก (-4 °C)",
+                manpower: "4 คน / กะ",
+                temp: "0 ถึง 4 °C",
+                tasks: [
+                    "ตรวจสอบความสะอาดและวัดอุณหภูมิตู้บรรทุกเนื้อหมู (&le; 4 °C) ก่อนเปิดตู้รับสินค้า",
+                    "ตรวจสอบเอกสารใบอนุญาตเคลื่อนย้ายซากสัตว์ (หน.3/หน.4) และตรวจสุขภาพซากเบื้องต้น (กลิ่น/สี/สิ่งแปลกปลอม)",
+                    "เคลื่อนย้ายหมูซีกขึ้นรางแขวน ชั่งน้ำหนักวัตถุดิบ (Overhead Rail Scale) และออกรหัส Production Lot Number",
+                    "จัดลำดับย้ายหมูซีกเข้าห้องพักหมูซีก (-4 °C) ตามระบบ FIFO/FEFO เพื่อรอส่งต่อห้องตัดแต่ง"
+                ],
+                checkpoints: [
+                    { title: "CP 1: อุณหภูมิเนื้อหมูซีก", desc: "อุณหภูมิเนื้อซึมลึกต้องไม่เกิน 4 °C", critical: true },
+                    { title: "CP 2: สุขอนามัยรถขนส่ง", desc: "ตู้ขนส่งต้องสะอาด ไม่มีกลิ่นอับ และปิดมิดชิด", critical: false },
+                    { title: "CP 3: การตรวจ Reconcile น้ำหนัก", desc: "เทียบน้ำหนักชั่งจริงกับใบส่งสินค้า Variance ต้องไม่เกิน ±0.5%", critical: false }
+                ],
+                records: [
+                    { id: "FM-RC-01", name: "บันทึกการตรวจรับวัตถุดิบและอุณหภูมิซากสุกร", freq: "ทุกล็อตที่รับเข้า", role: "พนักงานตรวจรับ / QA" },
+                    { id: "FM-RC-02", name: "บันทึกการตรวจสุขลักษณะรถขนส่งและเอกสารเคลื่อนย้าย", freq: "ทุกคัน", role: "พนักงานตรวจรับ" },
+                    { id: "FM-RC-03", name: "ใบบันทึกรับเข้าวัตถุดิบประจำวัน & Lot Tag", freq: "ประจำวัน", role: "หัวหน้าแผนกรับวัตถุดิบ" }
+                ]
+            },
+            CT: {
+                title: "2. แผนกตัดแต่งและแปรรูป (Cutting & Portioning)",
+                code: "CT",
+                icon: "scissors",
+                location: "ห้องตัดแต่งควบคุมอุณหภูมิ (โซนกลางแปลน)",
+                manpower: "30 คน / กะ",
+                temp: "&le; 15 °C",
+                tasks: [
+                    "เบิกหมูซีกตาม Production Order และทำการเลื่อยตัดแยกชิ้นส่วนหลัก (Main Cuts: สันนอก, สันใน, สามชั้น, สะโพก)",
+                    "เลาะกระดูก (Deboning) และตัดแต่งสเปกชิ้นเนื้อ (Trimming/Portioning) ตาม Specification ของลูกค้า",
+                    "คัดแยกกลุ่ม By-product (กระดูก, มัน, หนัง, เศษเนื้อ) ใส่ภาชนะเฉพาะสี ส่งไปยังโซน By-product",
+                    "นำมีดและอุปกรณ์จุ่มฆ่าเชื้อในหม้อน้ำร้อน 82 °C ทุกๆ 30 นาที หรือทุกครั้งที่ปนเปื้อน"
+                ],
+                checkpoints: [
+                    { title: "CP 1: อุณหภูมิห้องตัดแต่ง", desc: "ต้องควบคุมอุณหภูมิห้องไม่เกิน 15 °C ตลอดการผลิต", critical: true },
+                    { title: "CP 2: การฆ่าเชื้อมีดและอุปกรณ์", desc: "น้ำอุ่นฆ่าเชื้อมีดต้องมีความร้อน &ge; 82 °C", critical: true },
+                    { title: "CP 3: การคุม Yield การตัดแต่ง", desc: "คุม Mass Balance ให้ได้ตามสเปก Process Loss < 1.5%", critical: false }
+                ],
+                records: [
+                    { id: "FM-CT-01", name: "บันทึกการตรวจเช็กอุณหภูมิห้องตัดแต่งประจำชั่วโมง", freq: "ทุก 1 ชั่วโมง", role: "QC / พนักงานผลิต" },
+                    { id: "FM-CT-02", name: "บันทึกการตรวจสอบอุณหภูมิน้ำฆ่าเชื้อมีด (82°C)", freq: "ทุก 2 ชั่วโมง", role: "หัวหน้าไลน์ตัดแต่ง" },
+                    { id: "FM-CT-03", name: "ใบบันทึก Yield Report และ Mass Balance ประจำกะ", freq: "ประจำกะ", role: "Supervisor Production" }
+                ]
+            },
+            PK: {
+                title: "3. แผนกบรรจุและชั่งน้ำหนัก (Packaging & Labeling)",
+                code: "PK",
+                icon: "package",
+                location: "ห้องตัดแต่งฝั่งขวา (โซนปลายสายผลิต)",
+                manpower: "7 คน / กะ",
+                temp: "&le; 15 °C",
+                tasks: [
+                    "ชั่งน้ำหนักชิ้นเนื้อตาม Portion Weight Spec แต่ละ SKU (Retail / Bulk Pack)",
+                    "บรรจุสินค้าเข้าถุงสูญญากาศ (Vacuum Pack) หรือซีลถาด (Tray Sealer) ตามรูปแบบสั่งผลิต",
+                    "พิมพ์และติดฉลากสินค้า (Product Code, Lot No., MFG/EXP Date, Barcode) ให้ถูกต้อง",
+                    "ลำเลียงกล่อง/ตะกร้าบรรจุภัณฑ์ผ่านเครื่องตรวจจับโลหะ (Metal Detector) ก่อนส่งเข้าห้องเย็น"
+                ],
+                checkpoints: [
+                    { title: "CCP 1: เครื่องตรวจจับโลหะ (Metal Detector)", desc: "ต้องรัน Test Piece (Fe, Non-Fe, SUS) ผ่าน 100%", critical: true },
+                    { title: "CP 2: รอยซีลและสภาวะสูญญากาศ", desc: "ตรวจเช็กความสมบูรณ์ของรอยซีล ป้องกันการรั่วซึม", critical: false },
+                    { title: "CP 3: ความถูกต้องของฉลาก (Label)", desc: "ตรวจสอบ Lot No., วันหมดอายุ และ Barcode", critical: false }
+                ],
+                records: [
+                    { id: "FM-PK-01", name: "บันทึกการทดสอบเครื่องตรวจจับโลหะ (Metal Detector Log)", freq: "ทุก 1 ชม. & ก่อน-หลังงาน", role: "พนักงานบรรจุ / QC" },
+                    { id: "FM-PK-02", name: "บันทึกการสุ่มตรวจสอบรอยซีลและการบรรจุ", freq: "ทุก 2 ชั่วโมง", role: "พนักงานบรรจุ" },
+                    { id: "FM-PK-03", name: "บันทึกการสอบเทียบเครื่องชั่งน้ำหนักประจำวัน", freq: "ก่อนเริ่มงานประจำวัน", role: "พนักงานบรรจุ" }
+                ]
+            },
+            WH: {
+                title: "4. แผนกคลังสินค้าและจัดส่ง (Warehouse & Dispatch)",
+                code: "WH",
+                icon: "snowflake",
+                location: "ห้องเย็น 1-3 (0-4°C), ห้องเย็น 4 (-35°C) & โถงจัดส่ง",
+                manpower: "4 คน / กะ",
+                temp: "0 ถึง 4 °C / -35 °C",
+                tasks: [
+                    "จัดเก็บสินค้าสำเร็จรูปเข้าห้องเย็นแยกประเภท (Chilled Meat / Frozen Meat / Hold Area)",
+                    "นำสินค้าเข้าห้อง Blast Freezer (-35 °C) สำหรับสินค้ากลุ่มส่งออกหรือแช่แข็งตามระยะเวลาสเปก",
+                    "จัดคลังสินค้าตามระบบ FIFO/FEFO และสแกนตัดจ่ายสินค้าตามใบสั่งจ่าย (Picking Order)",
+                    "ตรวจสอบอุณหภูมิตู้รถขนส่ง (&le; 4 °C) ก่อนทำการโหลดสินค้าขึ้นรถเพื่อจัดส่ง"
+                ],
+                checkpoints: [
+                    { title: "CP 1: อุณหภูมิห้องเย็น 1-3", desc: "ต้องรักษาอุณหภูมิให้อยู่ในช่วง 0 ถึง 4 °C ตลอด 24 ชม.", critical: true },
+                    { title: "CP 2: อุณหภูมิห้องแช่แข็ง 4 (Blast)", desc: "อุณหภูมิห้องต้องได้ -35 °C", critical: true },
+                    { title: "CP 3: อุณหภูมิตู้รถขนส่งก่อนขึ้นสินค้า", desc: "ตู้รถต้องทำความเย็นได้ &le; 4 °C ก่อนเปิดโหลด", critical: false }
+                ],
+                records: [
+                    { id: "FM-WH-01", name: "บันทึกการตรวจวัดอุณหภูมิห้องเย็นและห้องแช่แข็ง 24 ชม.", freq: "ทุก 2 ชั่วโมง / Continuous", role: "เจ้าหน้าที่คลังสินค้า" },
+                    { id: "FM-WH-02", name: "บันทึกการจัดเก็บและเคลื่อนย้ายสินค้า (Stock Movement)", freq: "ทุกรายการเข้า-ออก", role: "เจ้าหน้าที่คลังสินค้า" },
+                    { id: "FM-WH-03", name: "บันทึกการตรวจสภาพรถขนส่งและอุณหภูมิจัดส่ง", freq: "ทุกคันที่จัดส่ง", role: "เจ้าหน้าที่ Dispatch" }
+                ]
+            },
+            QA: {
+                title: "5. แผนกควบคุมคุณภาพ (QA / QC Department)",
+                code: "QA",
+                icon: "shield-check",
+                location: "ห้องปฏิบัติการ QA & จุดตรวจหน้าไลน์ผลิต",
+                manpower: "4 คน / กะ",
+                temp: "N/A",
+                tasks: [
+                    "ตรวจเช็กความพร้อมด้านสุขลักษณะก่อนเริ่มงานประจำวัน (Pre-Operation Inspection)",
+                    "สุ่มตรวจอุณหภูมิเนื้อสัตว์, น้ำหนัก, ฉลาก และการปฏิบัติตาม SSOP/HACCP ของพนักงาน",
+                    "สุ่มเก็บตัวอย่าง Swab Test (ผิวสัมผัสเครื่องจักร/มือพนักงาน) ส่งตรวจทางจุลินทรีย์",
+                    "ดำเนินการอายัดสินค้ากรณีไม่ผ่านเกณฑ์ (HOLD/NCR) และพิจารณาอนุมัติปล่อยสินค้า (QA Release)"
+                ],
+                checkpoints: [
+                    { title: "CP 1: Pre-Operation Sanitation", desc: "ตรวจความสะอาดไลน์ผลิตก่อนเริ่มงาน ต้องผ่าน 100%", critical: true },
+                    { title: "CP 2: Verification of CCPs", desc: "ทบทวนบันทึก CCP ทั้งหมดในโรงงานประจำวัน", critical: true },
+                    { title: "CP 3: Micro Swab Test", desc: "ผลตรวจเชื้อตามขีดจำกัดมาตรฐานสุขลักษณะ", critical: false }
+                ],
+                records: [
+                    { id: "FM-QA-01", name: "บันทึกการตรวจความสะอาดก่อนเริ่มงาน (Pre-Op Checklist)", freq: "ก่อนเริ่มงานทุกวัน", role: "เจ้าหน้าที่ QA" },
+                    { id: "FM-QA-02", name: "ใบรายงานสิ่งไม่สอดคล้องและการแก้ไข (NCR/CAPA Report)", freq: "เมื่อพบปัญหา", role: "QA Manager" },
+                    { id: "FM-QA-03", name: "บันทึกการกักและอนุมัติปล่อยสินค้า (Hold & Release Log)", freq: "ประจำวัน", role: "เจ้าหน้าที่ QA" }
+                ]
+            },
+            SN: {
+                title: "6. แผนกสุขอนามัยและซ่อมบำรุง (Sanitation & Maintenance)",
+                code: "SN",
+                icon: "wrench",
+                location: "ห้องเก็บเครื่องมือ, ห้องเคมี & พื้นที่ผลิตทั้งหมด",
+                manpower: "4 คน / กะ",
+                temp: "N/A",
+                tasks: [
+                    "ทำความสะอาดและฆ่าเชื้อโรงงานหลังจบกะผลิต (Post-Op Cleaning) ตามระบบ SSOP",
+                    "ลำเลียงและจัดการขยะ/ของเสีย/น้ำเลือด ออกตาม Waste Route ไม่ให้ปนเปื้อนพื้นที่ผลิต",
+                    "ซ่อมบำรุงเชิงป้องกัน (PM) เครื่องจักร เลื่อย เครื่องซีล และระบบทำความเย็นห้องเย็น",
+                    "สอบเทียบ (Calibration) เครื่องมือวัด เช่น เครื่องชั่ง และเทอร์โมมิเตอร์วัดอุณหภูมิ"
+                ],
+                checkpoints: [
+                    { title: "CP 1: ความเข้มข้นสารเคมีทำความสะอาด", desc: "ตรวจวัด PPM ของน้ำยาฆ่าเชื้อให้ถูกต้องตามสเปก", critical: true },
+                    { title: "CP 2: การใช้น้ำมันเกรดอาหาร (Food Grade)", desc: "จุดสัมผัสอาหารต้องใช้น้ำมัน Food Grade NSF H1 เท่านั้น", critical: true },
+                    { title: "CP 3: การกำจัดขยะตามรอบเวลา", desc: "ขนถ่ายขยะออกตามเวลา ไม่สะสมในพื้นที่ผลิต", critical: false }
+                ],
+                records: [
+                    { id: "FM-SN-01", name: "บันทึกการทำความสะอาดและฆ่าเชื้อประจำวัน (SSOP Log)", freq: "หลังจบกะผลิต", role: "หัวหน้าทีม Sanitation" },
+                    { id: "FM-MT-01", name: "บันทึกการซ่อมบำรุงเชิงป้องกันเครื่องจักร (PM Record)", freq: "ประจำสัปดาห์/เดือน", role: "ช่างซ่อมบำรุง" },
+                    { id: "FM-MT-02", name: "บันทึกการสอบเทียบเครื่องมือวัดอุณหภูมิและเครื่องชั่ง", freq: "ประจำเดือน/งวด", role: "ช่างซ่อมบำรุง / QA" }
+                ]
+            }
+        };
+
+        let currentDept = 'RC';
+        let currentTab = 'tasks';
+
+        // Render Navigation Buttons
+        function renderNav() {
+            const container = document.getElementById('dept-nav-container');
+            container.innerHTML = '';
+            
+            Object.keys(departmentData).forEach(key => {
+                const dept = departmentData[key];
+                const isActive = key === currentDept;
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2.5 rounded-lg font-medium text-sm transition flex items-center space-x-2 border ${
+                    isActive 
+                    ? 'bg-red-600 text-white border-red-600 shadow-sm' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                }`;
+                btn.onclick = () => selectDept(key);
+                btn.innerHTML = `<i data-lucide="${dept.icon}" class="w-4 h-4"></i> <span>${dept.title.split(' ')[1]}</span>`;
+                container.appendChild(btn);
+            });
+        }
+
+        // Select Department Handler
+        function selectDept(code) {
+            currentDept = code;
+            renderNav();
+            updateDeptView();
+            // Highlight mobile nav if applicable
+            updateMobileNav();
+        }
+
+        function updateMobileNav() {
+            const buttons = document.querySelectorAll('.mobile-nav-item');
+            const keys = Object.keys(departmentData);
+            buttons.forEach((btn, idx) => {
+                if (keys[idx] === currentDept) {
+                    btn.classList.add('text-red-500', 'font-medium');
+                    btn.classList.remove('text-slate-500');
+                } else {
+                    btn.classList.remove('text-red-500', 'font-medium');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+        }
+
+        // Update Dynamic Content for Selected Department
+        function updateDeptView() {
+            const data = departmentData[currentDept];
+            
+            document.getElementById('dept-title').innerText = data.title;
+            document.getElementById('dept-code').innerText = data.code;
+            document.getElementById('dept-location').innerText = `พื้นที่: ${data.location}`;
+            document.getElementById('dept-manpower').innerText = data.manpower;
+            document.getElementById('dept-temp').innerText = data.temp;
+
+            // Icon Update
+            const iconBg = document.getElementById('dept-icon-bg');
+            iconBg.innerHTML = `<i data-lucide="${data.icon}" class="w-7 h-7"></i>`;
+
+            // Render Tasks List
+            const tasksContainer = document.getElementById('tasks-list');
+            tasksContainer.innerHTML = '';
+            data.tasks.forEach((task, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-start space-x-3 p-3 rounded-lg bg-slate-50 border border-slate-100';
+                item.innerHTML = `
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold flex items-center justify-center mt-0.5">${index + 1}</span>
+                    <p class="text-sm text-slate-700 font-normal leading-relaxed">${task}</p>
+                `;
+                tasksContainer.appendChild(item);
+            });
+
+            // Render Checkpoints List
+            const cpContainer = document.getElementById('checkpoints-list');
+            cpContainer.innerHTML = '';
+            data.checkpoints.forEach(cp => {
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-lg border ${cp.critical ? 'bg-amber-50/50 border-amber-200' : 'bg-slate-50 border-slate-200'}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1.5">
+                        <h4 class="text-sm font-bold ${cp.critical ? 'text-amber-900' : 'text-slate-800'}">${cp.title}</h4>
+                        ${cp.critical ? '<span class="bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">CRITICAL / CCP</span>' : '<span class="bg-slate-200 text-slate-700 text-[10px] font-medium px-2 py-0.5 rounded">Standard CP</span>'}
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">${cp.desc}</p>
+                `;
+                cpContainer.appendChild(item);
+            });
+
+            // Render Records Table
+            const tableBody = document.getElementById('records-table-body');
+            tableBody.innerHTML = '';
+            data.records.forEach(rec => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50/80 transition';
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-xs font-bold text-red-600">${rec.id}</td>
+                    <td class="py-3 px-4 text-slate-800 font-medium">${rec.name}</td>
+                    <td class="py-3 px-4 text-slate-500 text-xs">${rec.freq}</td>
+                    <td class="py-3 px-4 text-slate-600 text-xs"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded border border-slate-200">${rec.role}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            currentTab = tabName;
+            ['tasks', 'checkpoints', 'records'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tabName) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('border-transparent', 'text-slate-500');
+                    content.classList.remove('hidden');
+                    content.classList.add('block');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('border-transparent', 'text-slate-500');
+                    content.classList.remove('block');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // Set Current Date
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
+            document.getElementById('current-date').innerText = now.toLocaleDateString('th-TH', options);
+        }
+
+        // Initialize App
+        window.onload = () => {
+            setCurrentDate();
+            renderNav();
+            updateDeptView();
+        };
+    </script>
+</body>
+</html>
